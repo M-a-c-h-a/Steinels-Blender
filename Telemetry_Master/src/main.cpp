@@ -12,7 +12,7 @@
 
 Adafruit_BME280 bme; 
 Adafruit_BNO055 bno = Adafruit_BNO055(-1, 0x28);
-Adafruit_GPS GPS;
+// Adafruit_GPS gps(&GPSSerial);
 
 
 int counter = 0;
@@ -31,7 +31,21 @@ void setup() {
 
     //GPS TEST
 
-    GPS.begin(9600);
+//    bool initializeGPS()
+// 
+//     if (!gps.begin(9600)) {
+//         Serial.println("GPS not initialized");
+//         return false;
+//     }
+
+//     gps.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
+//     gps.sendCommand(PMTK_SET_NMEA_UPDATE_10HZ);
+//     gps.sendCommand(PGCMD_ANTENNA);
+
+//     delay (1000);
+
+//     return true;
+// }
 
     //BNO055 Initialization
 
@@ -76,28 +90,28 @@ void loop() {
     //Create Packet
 
     LoRa.beginPacket();
-    Serial.print("Temperature = ");
-    Serial.print(roundedTemperature);
-    Serial.println(" C*");
+    LoRa.print("Temperature = ");
+    LoRa.print(roundedTemperature);
+    LoRa.println(" C*");
 
-    Serial.print("Humidity = "); //
-    Serial.print(humidity); //
-    Serial.println(" %"); //
+    LoRa.print("Humidity = "); //
+    LoRa.print(humidity); //
+    LoRa.println(" %"); //
 
-    Serial.print("Altitude = ");
-    Serial.print(roundedAltitude);
-    Serial.println(" m");
+    LoRa.print("Altitude = ");
+    LoRa.print(roundedAltitude);
+    LoRa.println(" m");
 
-    Serial.println("Orientation: ");
-    Serial.print("X: ");
-    Serial.println(euler.x()); // Pitch
-    Serial.print("Y: ");
-    Serial.println(euler.y()); // Roll
-    Serial.print("Z: "); 
-    Serial.println(euler.z()); // Heading
+    LoRa.println("Orientation: ");
+    LoRa.print("X: ");
+    LoRa.println(euler.x()); // Pitch
+    LoRa.print("Y: ");
+    LoRa.println(euler.y()); // Roll
+    LoRa.print("Z: "); 
+    LoRa.println(euler.z()); // Heading
     
     Serial.println("Data packet sent!");
-    Serial.println();
+    LoRa.println();
 
   counter++;
 
