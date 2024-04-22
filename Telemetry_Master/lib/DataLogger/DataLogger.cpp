@@ -198,11 +198,11 @@ void DataLogger::logBNO(File dataFile)
 
   dataFile.print(systemCal, DEC);
   dataFile.print(",");
-  dataFile.print(gyro, DEC);
+  dataFile.print(gyros, DEC);
   dataFile.print(",");
-  dataFile.print(accel, DEC);
+  dataFile.print(accele, DEC);
   dataFile.print(",");
-  dataFile.print(mag, DEC);
+  dataFile.print(map, DEC);
   dataFile.print(",");
 }
 
