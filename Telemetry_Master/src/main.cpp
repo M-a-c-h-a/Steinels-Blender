@@ -4,7 +4,7 @@
 #include <Adafruit_BNO055.h>
 #include <cmath>
 #include <Adafruit_GPS.h>
-
+#include "DataLogger.h"
 
 #define BME_SCK 13
 #define BME_MISO 12
@@ -17,14 +17,13 @@ Adafruit_BME280 bme;
 Adafruit_BNO055 bno = Adafruit_BNO055(-1, 0x28);
 Adafruit_GPS GPS(&Serial1);
 
-
-int counter = 0;
+DataLogger dataLogger(50, 50);
 
 void setup() {
     Serial.begin(115200);
     delay(5000);
     GPS.begin(9600);
-  
+
     //LoRa Test
     Serial.println("LoRa Sender");  
 
@@ -36,7 +35,6 @@ void setup() {
     //GPS 
     GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
     GPS.sendCommand(PMTK_SET_NMEA_UPDATE_10HZ);
-
 
     //BNO055 Initialization
 
@@ -55,13 +53,15 @@ void setup() {
         Serial.println("BME280 failed to initialize");
         while (1);
     }
-    
 
+    // Initialize the DataLogger
+    if (!dataLogger.initialize()) {
+        Serial.println("Failed to initialize DataLogger");
+        while (1);
+    }
 }
 
-
 void loop() {
-
     GPS.read();
 
     if (GPS.newNMEAreceived())
@@ -75,33 +75,33 @@ void loop() {
         Serial.print(":");
         Serial.print(GPS.seconds, DEC);
 
+        // Update the DataLogger with new GPS data
+        dataLogger.updateGPS();
     }
-    
+
+    // Log data to the SD card
+    dataLogger.logDataCSV();
+
     Serial.print("Location: ");
     Serial.print(GPS.latitude, 3);
     Serial.print(", ");
     Serial.println(GPS.longitude, 3);
     Serial.println(GPS.satellites);
 
-
-    
     //Grab Data
     float temperature = bme.readTemperature(); 
     // Adjust sea level as needed
     float altitude = bme.readAltitude(53);
     imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
 
-    
-    //Round Data
+    // Round Data
     int roundedTemperature = round(temperature); 
     int roundedPitch = round(euler.x());
     int roundedRoll = round(euler.y());
     int roundedHeading = round(euler.z());
     int roundedAltitude = round(altitude);
 
-    
-    //Create Packet
-
+    // Create Packet
     LoRa.beginPacket();
     LoRa.print("Temperature = ");
     LoRa.print(roundedTemperature);
@@ -112,18 +112,17 @@ void loop() {
     LoRa.println(" m");
 
     LoRa.println("Orientation: ");
-    LoRa.print("X: ");
-    LoRa.println(roundedPitch); // Pitch
+    LoRa.print("X: ");LoRa.println(roundedPitch); // Pitch
     LoRa.print("Y: ");
     LoRa.println(roundedRoll); // Roll
     LoRa.print("Z: "); 
     LoRa.println(roundedHeading); // Heading
-    
+
     Serial.println("Data packet sent!");
     LoRa.println();
     LoRa.endPacket();
 
-  counter++;
+    counter++;
 
-  delay(50);
+    delay(50);
 }

@@ -1,163 +1,291 @@
 #include "DataLogger.h"
 
+DataLogger::DataLogger(uint32_t bnoPeriod, uint32_t bmePeriod, uint32_t gpsPeriod) 
+{
 
-DataLogger::DataLogger(uint32_t imuPeriod, uint32_t baroPeriod, uint32_t gpsPeriod)
-    : imuTimer(imuPeriod), baroTimer(baroPeriod), gpsTimer(gpsPeriod) {
+  timerBNO = new Timer(bnoPeriod);
+  timerBME = new Timer(bmePeriod);
+  timerGPS = new Timer(gpsPeriod);
+
+}
+
+bool DataLogger::initialize()
+{
+
+  if (!SD.begin(chipSelect)) 
+  {
+    Serial.println("Card failed, or not present. Terminating");
+    return false;
+  }
+  Serial.println("Card initialized.");
+
+  if (!newDataFile()) {
+    Serial.println("Failed to open data file");
+    return false;
+  }
+    
+  return true;
 }
 
 
-bool DataLogger::initialize() {
-    if (!SD.begin(chipSelect)) {
-        Serial.println("SD card initialization failed.");
-        return false;
-    }
+/*
+* Closes old file, and generates a new file, opens that file, and adds headers.
+*/
+bool DataLogger::newDataFile() 
+{
 
-    if (!createNewDataFile()) {
-        Serial.println("Failed to create a new data file.");
-        return false;
-    }
+  fileName = getFileName();
 
-    Serial.println("SD card and data file initialized successfully.");
-    return true;
+  const char* filePath = fileName.c_str(); // SD.open() only accepts 'constant char*' type, so convert
+    
+  File dataFile = SD.open(filePath, FILE_WRITE);
+  
+  if (dataFile)
+    addDataHeaders(dataFile);
+  else
+    return false;
+
+  Serial.print("New file created and opened -> name: ");
+  Serial.println(fileName);
+
+  dataFile.close();
+
+  return true;
+}
+
+void DataLogger::addDataHeaders(File dataFile)
+{
+  dataFile.println("SystemMillis,BMETemperature,BMEPressure,BMEApproximateAlt,BNO Quat W, BNO Quat X,BNO Quat Y,BNO Quat Z,BNO Gyro X,BNO Gyro Y,BNO Gyro Z,BNO Accel X,BNO Accel Y,BNO Accel Z,BNO_Grav_X,BNO_Grav_Y,BNO_Grav_Z,BNO CALIBRATION sys,BNOGyro,BNOAccel,BNOMagnitude,ALGOPos1,ALGOPos2,GPSHour,GPSmin,GPSsec,GPSmilli,GPSday,GPSmonth,GPSyear,GPSFix,GPSfixquality_3d,GPSLat,GPSlong,GPSSpeed,GPSAngle,GPSAlt,GPSSatNum,GPSLongitude,GPSLatitude,GPSAltitude,GPSSpeed,GPSAngle");
 }
 
 
-bool DataLogger::createNewDataFile() {
+/*
+* Checks for files that exist in numerical order, creating a file name after the last existing one is found. Called when the datalogger class is created
+* Format: datalog_n (n is a number, zero-indexed)
+*/
+String DataLogger::getFileName() 
+{
 
-    fileName = generateFileName();
+  String file = "datalog_";
 
+  int i = 0;
 
-    dataFile = SD.open(fileName.c_str(), FILE_WRITE);
-    if (!dataFile) {
-        Serial.println("Failed to open data file for writing.");
-        return false;
-    }
+  while (SD.exists((file + i + ".csv").c_str())) {
+    i++;
+  }
 
-    dataFile.close();
-    return true;
+  return file + i + ".csv";
+  
 }
 
 
-String DataLogger::generateFileName() {
+// SD OUTPUT METHODS:
 
-    String baseName = "telemetry_";
-    int fileIndex = 0;
+void DataLogger::logDataCSV()
+{
 
+  File dataFile = SD.open(fileName.c_str(), FILE_WRITE);
 
-    while (SD.exists((baseName + fileIndex + ".csv").c_str())) {
-        fileIndex++;
-    }
+  bool bmeReady = (timerBME->check());
+  bool bnoReady = (timerBNO->check());
+  bool gpsReady = updateGPS();
 
-
-    return baseName + fileIndex + ".csv";
-}
-
-
-void DataLogger::logData() {
-
-    dataFile = SD.open(fileName.c_str(), FILE_WRITE);
-    if (!dataFile) {
-        Serial.println("Failed to open data file for writing.");
-        return;
-    }
-
-
-    unsigned long timestamp = millis();
-
-
-    dataFile.print(timestamp);
+  if ((bmeReady || bnoReady || gpsReady) && dataFile)
+  {
+    dataFile.print(millis());
     dataFile.print(",");
 
-
-    if (imuTimer.check()) {
-        imuTimer.reset();
-        logIMUData(dataFile);
+    if (bmeReady)
+    {
+      timerBME->reset();
+      logBME(dataFile);
+      
     }
+    else 
+      logBMESpacer(dataFile);
 
-    if (baroTimer.check()) {
-        baroTimer.reset();
-        logBarometerData(dataFile);
+    if (bnoReady)
+    {
+      timerBNO->reset();
+      logBNO(dataFile);
+      logAlgo(dataFile);
     }
+    else {
+      logBNOSpacer(dataFile);
+      logAlgoSpacer(dataFile);
+    }
+      
 
-    if (gpsTimer.check()) {
-        gpsTimer.reset();
-        logGPSData(dataFile);
+    if (gpsReady)
+    {
+      timerGPS->reset();
+      logGPS(dataFile);
+    }
+    else {
+      logGPSSpacer(dataFile);
     }
 
     dataFile.println();
+  }
 
     dataFile.close();
+  
 }
 
-/*
-void DataLogger::logIMUData(File& dataFile) {
+void DataLogger::logBME(File dataFile)
+{
 
-    imu::Quaternion quat = getQuaternion();
-    imu::Vector<3> gyro = getGyroscope();
-    imu::Vector<3> accel = getAccelerometer();
-    imu::Vector<3> grav = getGravity();
+  float pressure = getPressure();
+  float aproxAlt = getSeaLevelAlt();
+  float temp = getTemperature();
 
+  dataFile.print(temp);
+  dataFile.print(",");
 
-    dataFile.print(quat.w(), 4);
-    dataFile.print(",");
-    dataFile.print(quat.x(), 4);
-    dataFile.print(",");
-    dataFile.print(quat.y(), 4);
-    dataFile.print(",");
-    dataFile.print(quat.z(), 4);
-    dataFile.print(",");
-    dataFile.print(gyro.x());
-    dataFile.print(",");
-    dataFile.print(gyro.y());
-    dataFile.print(",");
-    dataFile.print(gyro.z());
-    dataFile.print(",");
-    dataFile.print(accel.x());
-    dataFile.print(",");
-    dataFile.print(accel.y());
-    dataFile.print(",");
-    dataFile.print(accel.z());
-    dataFile.print(",");
-    dataFile.print(grav.x());
-    dataFile.print(",");
-    dataFile.print(grav.y());
-    dataFile.print(",");
-    dataFile.print(grav.z());
-    dataFile.print(",");
-}
-*/
+  dataFile.print(pressure);
+  dataFile.print(",");
 
-void DataLogger::logBarometerData(File& dataFile) {
+  dataFile.print(aproxAlt);
+  dataFile.print(",");
 
-    float temperature = getTemperature();
-    float pressure = getPressure();
-    float altitude = getSeaLevelAlt();
-
-    dataFile.print(temperature, 2);
-    dataFile.print(",");
-    dataFile.print(pressure, 2);
-    dataFile.print(",");
-    dataFile.print(altitude, 2);
-    dataFile.print(",");
 }
 
-// Log data from the GPS to the data file
-void DataLogger::logGPSData(File& dataFile) {
-    // Collect GPS data (latitude, longitude, altitude, speed, heading)
-    float latitude = getLatitude();
-    float longitude = getLongitude();
-    float altitude = getAltitude();
-    float speed = getSpeed();
-    float heading = getHeading();
+void DataLogger::logBMESpacer(File dataFile)
+{
+  dataFile.print(",");
+  dataFile.print(",");
+  dataFile.print(",");
+}
 
-    dataFile.print(latitude, 6);
+void DataLogger::logBNO(File dataFile)
+{
+
+  imu::Quaternion quat = getQuaternion();
+  imu::Vector<3> gyros = getGyroscpe();
+  imu::Vector<3> accele = getAccelermometer();
+  imu::Vector<3> grav = getGravity();
+  updateCalibration();
+
+  dataFile.print(quat.w(), 4);
+  dataFile.print(",");
+  dataFile.print(quat.x(), 4);
+  dataFile.print(",");
+  dataFile.print(quat.y(), 4);
+  dataFile.print(",");
+  dataFile.print(quat.z(), 4);
+  dataFile.print(",");
+  
+  dataFile.print(gyros.x());
+  dataFile.print(",");
+  dataFile.print(gyros.y());
+  dataFile.print(",");
+  dataFile.print(gyros.z());
+  dataFile.print(",");
+
+  dataFile.print(accele.x());
+  dataFile.print(",");
+  dataFile.print(accele.y());
+  dataFile.print(",");
+  dataFile.print(accele.z());
+  dataFile.print(",");
+
+  dataFile.print(grav.x());
+  dataFile.print(",");
+  dataFile.print(grav.y());
+  dataFile.print(",");
+  dataFile.print(grav.z());
+  dataFile.print(",");
+
+  dataFile.print(systemCal, DEC);
+  dataFile.print(",");
+  dataFile.print(gyro, DEC);
+  dataFile.print(",");
+  dataFile.print(accel, DEC);
+  dataFile.print(",");
+  dataFile.print(mag, DEC);
+  dataFile.print(",");
+}
+
+void DataLogger::logBNOSpacer(File dataFile)
+{
+  for (int i = 0; i < 17; i++)
+  {
     dataFile.print(",");
-    dataFile.print(longitude, 6);
+  }
+
+}
+
+void DataLogger::logAlgo(File dataFile) 
+{
+  float posTemp[2];
+  float *pos = getPosAlgo(posTemp);
+      
+  dataFile.print(pos[0]);
+  dataFile.print(",");
+  dataFile.print(pos[1]);
+  dataFile.print(",");
+}
+
+void DataLogger::logAlgoSpacer(File dataFile)
+{
+  dataFile.print(",");
+  dataFile.print(",");
+}
+
+void DataLogger::logGPS(File dataFile)
+{
+
+  int timeArr[4];
+  int *gpsTime = getGPSTime(timeArr);
+  for (int i = 3; i > -1; i--)
+  {
+    dataFile.print(gpsTime[i]);
     dataFile.print(",");
-    dataFile.print(altitude, 2);
+  }
+
+  int dateArr[3];
+  int *gpsDate = getGPSDate(dateArr);
+  for (int i = 0; i < 3; i++)
+  {
+    dataFile.print(gpsDate[i]);
     dataFile.print(",");
-    dataFile.print(speed, 2);
+  }
+
+  dataFile.print((int)getGPSFix());
+  dataFile.print(",");
+  dataFile.print((int)getGPSFixquality_3d());
+  dataFile.print(",");
+
+  if (getGPSFix()) {
+      dataFile.print(getLongitude(), 6);
+      dataFile.print(",");
+      dataFile.print(getLatitude(), 6);
+      dataFile.print(",");
+      dataFile.print(getAltitude());
+      dataFile.print(",");
+      dataFile.print(getSpeed());
+      dataFile.print(",");
+      dataFile.print(getAngle());
+      dataFile.print(",");
+    }
+    else { // Spacer for missing data when there is no fix
+      dataFile.print(",");
+      dataFile.print(",");
+      dataFile.print(",");
+      dataFile.print(",");
+      dataFile.print(",");
+      dataFile.print(",");
+      dataFile.print(",");
+      dataFile.print(",");
+    }
+  
+}
+
+void DataLogger::logGPSSpacer(File dataFile)
+{  
+  for (int i = 0; i < 14; i++)
+  {
     dataFile.print(",");
-    dataFile.print(heading, 2);
-    dataFile.print(",");
+  }
+
 }
