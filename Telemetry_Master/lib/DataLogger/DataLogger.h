@@ -1,16 +1,21 @@
 #ifndef DataLogger_h
 #define DataLogger_h
 
+#include <Arduino.h>
 #include <Timer.h>
 #include <SPI.h>
 #include <SD.h>
 #include <Adafruit_BME280.h>
 #include <Adafruit_BNO055.h>
 #include <Adafruit_GPS.h>
+#include <SensorInterface.h>
 
+const int chipSelect = 11;
+// uint8_t systemCal, gyro, accel, mag = 0;
 class DataLogger
 {
 public:
+    
     DataLogger(uint32_t bnoPeriod, uint32_t bmePeriod, uint32_t gpsPeriod);
     bool initialize();
     bool newDataFile();
@@ -26,25 +31,6 @@ public:
     void logGPS(File dataFile);
     void logGPSSpacer(File dataFile);
 
-    float getPressure();
-    float getTemperature();
-    float getSeaLevelAlt();
-    imu::Quaternion getQuaternion();
-    imu::Vector<3> getGyroscpe();
-    imu::Vector<3> getAccelermometer();
-    imu::Vector<3> getGravity();
-    void updateCalibration();
-    float *getPosAlgo(float posTemp[2]);
-    int *getGPSTime(int timeArr[4]);
-    int *getGPSDate(int dateArr[3]);
-    bool updateGPS();
-    uint8_t getGPSFix();
-    uint8_t getGPSFixquality_3d();
-    float getLongitude();
-    float getLatitude();
-    float getAltitude();
-    float getSpeed();
-    float getAngle();
     uint8_t getSatellites;
 
 private:

@@ -5,6 +5,7 @@
 #include <cmath>
 #include <Adafruit_GPS.h>
 #include "DataLogger.h"
+#include "SensorInterface.h"
 
 #define BME_SCK 13
 #define BME_MISO 12
@@ -13,11 +14,11 @@
 
 #define GPSSerial Serial1
 
-Adafruit_BME280 bme; 
-Adafruit_BNO055 bno = Adafruit_BNO055(-1, 0x28);
-Adafruit_GPS GPS(&Serial1);
+ Adafruit_BME280 bme; 
+ Adafruit_BNO055 bno = Adafruit_BNO055(-1, 0x28);
+ Adafruit_GPS GPS(&Serial1);
 
-DataLogger dataLogger(50, 50);
+DataLogger dataLogger(50, 50, 50);
 
 void setup() {
     Serial.begin(115200);
@@ -76,7 +77,7 @@ void loop() {
         Serial.print(GPS.seconds, DEC);
 
         // Update the DataLogger with new GPS data
-        dataLogger.updateGPS();
+        updateGPS();
     }
 
     // Log data to the SD card
@@ -122,7 +123,7 @@ void loop() {
     LoRa.println();
     LoRa.endPacket();
 
-    counter++;
+    // counter++;
 
     delay(50);
 }
