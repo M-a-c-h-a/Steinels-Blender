@@ -4,6 +4,8 @@ static Adafruit_BME280 bme; // I2C initialization for BME
 static Adafruit_BNO055 bno = Adafruit_BNO055(-1, 0x28); // I2C initialization for BNO
 static Adafruit_GPS gps(&GPSSerial); // Serial initialization for GPS
 
+// If you modify the variables here, the other copy of the variables located in main.cpp WILL NOT CHANGE ACCORDINGLY! Go replicate changes everywhere.
+
 uint8_t systemCal, gyro, accel, mag = 0;
 
 bool initializeBME()
