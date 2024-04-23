@@ -31,26 +31,20 @@ bool DataLogger::initialize()
 /*
 * Closes old file, and generates a new file, opens that file, and adds headers.
 */
-bool DataLogger::newDataFile() 
-{
-
-  fileName = getFileName();
-
-  const char* filePath = fileName.c_str(); // SD.open() only accepts 'constant char*' type, so convert
-    
-  File dataFile = SD.open(filePath, FILE_WRITE);
-  
-  if (dataFile)
+bool DataLogger::newDataFile() {
+    fileName = getFileName();
+    const char* filePath = fileName.c_str();
+    Serial.println(filePath);
+    File dataFile = SD.open(filePath, FILE_WRITE);
+    // if (!dataFile) {
+    //     Serial.println("Failed to open data file");
+    //     return false;
+    // }
     addDataHeaders(dataFile);
-  else
-    return false;
-
-  Serial.print("New file created and opened -> name: ");
-  Serial.println(fileName);
-
-  dataFile.close();
-
-  return true;
+    Serial.print("New file created and opened -> name: ");
+    Serial.println(fileName);
+    dataFile.close();
+    return true;
 }
 
 void DataLogger::addDataHeaders(File dataFile)
