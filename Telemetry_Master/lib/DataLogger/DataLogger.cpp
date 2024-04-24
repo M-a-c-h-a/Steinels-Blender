@@ -38,7 +38,7 @@ bool DataLogger::newDataFile() {
     Serial.println(filePath);
     Serial.println(fileName);
     File dataFile = SD.open(filePath, FILE_WRITE);
-    if (!dataFile) {
+    if (!newDataFile) {
         Serial.println("Failed to open data file");
         return false;
     }
