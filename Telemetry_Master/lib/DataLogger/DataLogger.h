@@ -4,11 +4,11 @@
 #include <Arduino.h>
 #include <Timer.h>
 #include <SPI.h>
-#include <SD.h>
 #include <Adafruit_BME280.h>
 #include <Adafruit_BNO055.h>
 #include <Adafruit_GPS.h>
 #include <SensorInterface.h>
+#include <SD.h>
 
 const int chipSelect = 7;
 // uint8_t systemCal, gyro, accel, mag = 0;

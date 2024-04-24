@@ -37,7 +37,7 @@ bool DataLogger::newDataFile() {
     const char* filePath = fileName.c_str();
     Serial.println(filePath);
     Serial.println(fileName);
-    File dataFile = SD.open(filePath, FILE_WRITE);
+    File dataFile = SD.open(fileName, FILE_WRITE);
     // if (!newDataFile) {
     //     Serial.println("Failed to open data file");
     //     return false;
@@ -68,7 +68,7 @@ void DataLogger::addDataHeaders(File dataFile)
 String DataLogger::getFileName() 
 {
 
-  String file = "datalog_";
+  String file = "datalog";
 
   int i = 0;
 
@@ -291,3 +291,15 @@ void DataLogger::logGPSSpacer(File dataFile)
   }
 
 }
+
+/*
+
+Create 25hz
+
+bite to length converter to check if we're within the bandwidth
+
+Basically want to eliminiate strings from the transmission package, and have a specific order that has a beginnign and and ned of the packet that you can read
+
+Call Lora transmission every time the 5Hz transmission is done, and then call the Datalogger on the other one
+
+*/

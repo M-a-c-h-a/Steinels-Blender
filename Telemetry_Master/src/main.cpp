@@ -14,16 +14,11 @@
 
 #define GPSSerial Serial1
 
- Adafruit_BME280 bme; 
- Adafruit_BNO055 bno = Adafruit_BNO055(-1, 0x28);
- Adafruit_GPS GPS(&Serial1);
-
 DataLogger dataLogger(50, 50, 50);
 
 void setup() {
     Serial.begin(115200);
     delay(5000);
-    GPS.begin(9600);
 
     //LoRa Test
     Serial.println("LoRa Sender");  
@@ -33,25 +28,8 @@ void setup() {
         while (1);
     }
 
-    //GPS 
-    GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
-    GPS.sendCommand(PMTK_SET_NMEA_UPDATE_10HZ);
-
-    //BNO055 Initialization
-
-    Serial.println(F("BNO055 test"));   
-    if (!bno.begin()) {
-        Serial.println("BNO055 failed to initialize");
-        while (1);
-      }
-
-      Serial.println("BNO055 initialized");
-
-    //BME280 Initialziation
-    Serial.println(F("BME280 Test"));
-
-    if (!bme.begin()) {
-        Serial.println("BME280 failed to initialize");
+    if (!initializeSensorSuite()) {
+        Serial.println("Failed to initialize sensors :(");
         while (1);
     }
 
@@ -63,37 +41,23 @@ void setup() {
 }
 
 void loop() {
-    GPS.read();
 
-    if (GPS.newNMEAreceived())
-    {
-        Serial.print("new data recieved");
-        GPS.parse(GPS.lastNMEA());
-        Serial.print("Time: ");
-        Serial.print(GPS.hour, DEC);
-        Serial.print(":");
-        Serial.print(GPS.minute, DEC);
-        Serial.print(":");
-        Serial.print(GPS.seconds, DEC);
-
-        // Update the DataLogger with new GPS data
-        updateGPS();
-    }
 
     // Log data to the SD card
     dataLogger.logDataCSV();
 
-    Serial.print("Location: ");
-    Serial.print(GPS.latitude, 3);
-    Serial.print(", ");
-    Serial.println(GPS.longitude, 3);
-    Serial.println(GPS.satellites);
+
+// Proper calls to record data.
+
+    initializeBME();
+    initializeBNO();
+
+
 
     //Grab Data
-    float temperature = bme.readTemperature(); 
+    float temperature = getTemperature(); 
     // Adjust sea level as needed
-    float altitude = bme.readAltitude(53);
-    imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
+    float altitude = getAltitude();
 
     // Round Data
     int roundedTemperature = round(temperature); 
