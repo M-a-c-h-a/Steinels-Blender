@@ -10,7 +10,7 @@
 #include <Adafruit_GPS.h>
 #include <SensorInterface.h>
 
-const int chipSelect = 11;
+const int chipSelect = 7;
 // uint8_t systemCal, gyro, accel, mag = 0;
 class DataLogger
 {

@@ -6,8 +6,9 @@ DataLogger::DataLogger(uint32_t bnoPeriod, uint32_t bmePeriod, uint32_t gpsPerio
   timerBNO = new Timer(bnoPeriod);
   timerBME = new Timer(bmePeriod);
   timerGPS = new Timer(gpsPeriod);
-
+  pinMode(chipSelect, OUTPUT);
 }
+
 
 bool DataLogger::initialize()
 {
