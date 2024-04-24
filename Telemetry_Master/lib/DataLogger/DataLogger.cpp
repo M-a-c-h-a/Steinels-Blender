@@ -191,7 +191,7 @@ void DataLogger::logBNO(File dataFile)
   dataFile.print(",");
   dataFile.print(grav.z());
   dataFile.print(",");
-  uint8_t systemCal, gyro, accel, mag = 0;
+  // uint8_t systemCal, gyro, accel, mag = 0;
   dataFile.print(systemCal, DEC);
   dataFile.print(",");
   dataFile.print(gyro, DEC);
