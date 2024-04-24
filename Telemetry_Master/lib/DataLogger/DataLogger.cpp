@@ -38,10 +38,16 @@ bool DataLogger::newDataFile() {
     Serial.println(filePath);
     Serial.println(fileName);
     File dataFile = SD.open(filePath, FILE_WRITE);
-    if (!newDataFile) {
-        Serial.println("Failed to open data file");
-        return false;
-    }
+    // if (!newDataFile) {
+    //     Serial.println("Failed to open data file");
+    //     return false;
+    // }
+
+  if (!dataFile) {
+    Serial.println("Hello!");
+    return false;
+  }
+
     addDataHeaders(dataFile);
     Serial.print("New file created and opened -> name: ");
     Serial.println(fileName);
