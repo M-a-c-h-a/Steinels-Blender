@@ -12,7 +12,7 @@
 #define BME_MOSI 11
 #define BME_CS 10
 
-#define GPSSerial Serial2
+#define GPSSerial Serial1
 
  Adafruit_BME280 bme; 
  Adafruit_BNO055 bno = Adafruit_BNO055(-1, 0x28);
