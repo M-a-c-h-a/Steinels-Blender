@@ -79,11 +79,11 @@ void loop() {
     LoRa.println(" m");
 
     LoRa.println("Orientation: ");
-    LoRa.print("X: ");LoRa.println(roundedPitch); // Pitch
-    LoRa.print("Y: ");
-    LoRa.println(roundedRoll); // Roll
-    LoRa.print("Z: "); 
-    LoRa.println(roundedHeading); // Heading
+    // LoRa.print("X: ");LoRa.println(roundedPitch); // Pitch
+    // LoRa.print("Y: ");
+    // LoRa.println(roundedRoll); // Roll
+    // LoRa.print("Z: "); 
+    // LoRa.println(roundedHeading); // Heading
 
     Serial.println("Data packet sent!");
     LoRa.println();
