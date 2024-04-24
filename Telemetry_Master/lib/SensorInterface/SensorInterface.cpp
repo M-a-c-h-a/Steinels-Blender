@@ -65,7 +65,7 @@ float getTemperature() { return bme.readTemperature(); }
 imu::Vector<3> getAccelermometer() { return bno.getVector(Adafruit_BNO055::VECTOR_ACCELEROMETER); }
 imu::Vector<3> getGyroscpe() { return bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE); }
 imu::Vector<3> getGravity() { return bno.getVector(Adafruit_BNO055::VECTOR_GRAVITY); }
-imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
+imu::Vector<3> getEuler() { return bno.getVector(Adafruit_BNO055::VECTOR_EULER); }
 imu::Quaternion getQuaternion() { return bno.getQuat(); }
 
 void updateCalibration() {bno.getCalibration(&systemCal, &gyro, &accel, &mag); }

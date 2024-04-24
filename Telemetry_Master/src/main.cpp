@@ -59,11 +59,13 @@ void loop() {
     // Adjust sea level as needed
     float altitude = getAltitude();
 
+    //float euler = getEuler();
+
     // Round Data
     int roundedTemperature = round(temperature); 
-    int roundedPitch = round(euler.x());
-    int roundedRoll = round(euler.y());
-    int roundedHeading = round(euler.z());
+    // int roundedPitch = round(getEuler().x());
+    // int roundedRoll = round(getEuler().y());
+    // int roundedHeading = round(getEuler().z());
     int roundedAltitude = round(altitude);
 
     // Create Packet
