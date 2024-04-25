@@ -59,13 +59,11 @@ void loop() {
     // Adjust sea level as needed
     float altitude = getAltitude();
 
-    //float euler = getEuler();
-
     // Round Data
     int roundedTemperature = round(temperature); 
-    // int roundedPitch = round(getEuler().x());
-    // int roundedRoll = round(getEuler().y());
-    // int roundedHeading = round(getEuler().z());
+    int roundedPitch = round(getEuler().x());
+    int roundedRoll = round(getEuler().y());
+    int roundedHeading = round(getEuler().z());
     int roundedAltitude = round(altitude);
 
     // Create Packet
@@ -79,11 +77,11 @@ void loop() {
     LoRa.println(" m");
 
     LoRa.println("Orientation: ");
-    // LoRa.print("X: ");LoRa.println(roundedPitch); // Pitch
-    // LoRa.print("Y: ");
-    // LoRa.println(roundedRoll); // Roll
-    // LoRa.print("Z: "); 
-    // LoRa.println(roundedHeading); // Heading
+    LoRa.print("X: ");LoRa.println(roundedPitch); // Pitch
+    LoRa.print("Y: ");
+    LoRa.println(roundedRoll); // Roll
+    LoRa.print("Z: "); 
+    LoRa.println(roundedHeading); // Heading
 
     Serial.println("Data packet sent!");
     LoRa.println();
