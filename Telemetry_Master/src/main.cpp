@@ -32,7 +32,7 @@ void setup() {
         Serial.println("Failed to initialize sensors :(");
         while (1);
     }
-
+    Serial.println("Testing");
     // Initialize the DataLogger
     if (!dataLogger.initialize()) {
         Serial.println("Failed to initialize DataLogger");
