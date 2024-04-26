@@ -59,11 +59,18 @@ void loop() {
     // Adjust sea level as needed
     float altitude = getAltitude();
 
+    Adafruit_BNO055 bno = Adafruit_BNO055(-1, 0x28);
+
+    imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
+
     // Round Data
     int roundedTemperature = round(temperature); 
-    int roundedPitch = round(getEuler().x());
-    int roundedRoll = round(getEuler().y());
-    int roundedHeading = round(getEuler().z());
+    int roundedPitch = round(euler.x());
+    int roundedRoll = round(euler.y());
+    int roundedHeading = round(euler.z());
+    // int roundedPitch = round(getEuler().x());
+    // int roundedRoll = round(getEuler().y());
+    // int roundedHeading = round(getEuler().z());
     int roundedAltitude = round(altitude);
 
     // Create Packet
@@ -89,5 +96,5 @@ void loop() {
 
     // counter++;
 
-    delay(50);
+    delay(5000);
 }

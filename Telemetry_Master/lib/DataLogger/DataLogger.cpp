@@ -37,7 +37,7 @@ bool DataLogger::newDataFile() {
     const char* filePath = fileName.c_str();
     Serial.println(filePath);
     Serial.println(fileName);
-    File dataFile = SD.open(fileName, FILE_WRITE);
+    File dataFile = SD.open(filePath, FILE_WRITE);
     // if (!newDataFile) {
     //     Serial.println("Failed to open data file");
     //     return false;

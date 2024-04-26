@@ -35,7 +35,7 @@ float getTemperature();
 imu::Vector<3> getAccelermometer();
 imu::Vector<3> getGyroscpe();
 imu::Vector<3> getGravity();
-imu::Vector<3> getEuler();
+// imu::Vector<3> getEuler();
 imu::Quaternion getQuaternion();
 
 void updateCalibration(); // Must call every loop or else calibration level will stale.
